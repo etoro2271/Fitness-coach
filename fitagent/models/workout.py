@@ -1,4 +1,8 @@
-"""Workout and training plan models."""
+"""Workout and training plan models.
+
+Internal storage uses metric units (km, min/km). All values are converted
+to the athlete's preferred unit system at display time using fitagent.utils.units.
+"""
 
 from datetime import date, timedelta
 from enum import Enum
@@ -65,12 +69,12 @@ class IntensityZone(str, Enum):
 
 
 class WorkoutStep(BaseModel):
-    """A single step within a workout."""
+    """A single step within a workout. Distances stored in km internally."""
 
     description: str
     duration_minutes: Optional[float] = None
-    distance_km: Optional[float] = None
-    target_pace: Optional[str] = None
+    distance_km: Optional[float] = Field(default=None, description="Distance in km (converted to miles for imperial athletes)")
+    target_pace: Optional[str] = Field(default=None, description="Target pace in min/km or min/mile based on athlete preference")
     target_hr_zone: Optional[IntensityZone] = None
     repetitions: Optional[int] = None
     rest_between: Optional[str] = None
@@ -78,7 +82,7 @@ class WorkoutStep(BaseModel):
 
 
 class Workout(BaseModel):
-    """A single workout session."""
+    """A single workout session. Distances stored in km internally."""
 
     id: str
     athlete_id: str
@@ -90,7 +94,7 @@ class Workout(BaseModel):
     main_set: list[WorkoutStep]
     cooldown: Optional[list[WorkoutStep]] = None
     total_duration_minutes: int
-    total_distance_km: Optional[float] = None
+    total_distance_km: Optional[float] = Field(default=None, description="Total distance in km (converted at display time)")
     primary_zone: IntensityZone
     rpe_target: int = Field(ge=1, le=10, description="Target RPE 1-10")
     notes: Optional[str] = None
@@ -117,8 +121,8 @@ class WorkoutFeedback(BaseModel):
     workout_id: str
     athlete_id: str
     perceived_effort: PerceivedEffort
-    actual_pace: Optional[str] = None
-    actual_distance_km: Optional[float] = None
+    actual_pace: Optional[str] = Field(default=None, description="Actual pace in athlete's preferred unit (min/km or min/mile)")
+    actual_distance_km: Optional[float] = Field(default=None, description="Actual distance in km (accepts miles input, converts internally)")
     actual_duration_minutes: Optional[float] = None
     average_hr: Optional[int] = None
     felt_good: bool = True
@@ -137,7 +141,7 @@ class WeeklyPlan(BaseModel):
     start_date: date
     end_date: date
     workouts: list[Workout]
-    weekly_volume_km: Optional[float] = None
+    weekly_volume_km: Optional[float] = Field(default=None, description="Total volume in km (displayed as miles for imperial)")
     weekly_duration_hours: Optional[float] = None
     focus: str = Field(description="Primary focus for this week")
     notes: Optional[str] = None

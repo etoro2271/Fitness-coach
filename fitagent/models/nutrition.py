@@ -1,4 +1,8 @@
-"""Nutrition and meal planning models."""
+"""Nutrition and meal planning models.
+
+Internal storage uses metric units (kg, liters, celsius). All values are converted
+to the athlete's preferred unit system at display time using fitagent.utils.units.
+"""
 
 from datetime import date
 from enum import Enum
@@ -62,7 +66,7 @@ class MealPlan(BaseModel):
     goal: NutritionGoal
     total_macros: MacroBreakdown
     meals: list[Meal]
-    hydration_target_liters: float = Field(default=2.5)
+    hydration_target_liters: float = Field(default=2.5, description="Hydration target in liters (displayed as fl oz for imperial)")
     supplements: list[str] = Field(default_factory=list)
     pre_workout_timing_minutes: int = Field(default=60, description="Minutes before workout to eat")
     notes: Optional[str] = None
@@ -80,13 +84,13 @@ class TrainingDayType(str, Enum):
 
 
 class NutritionPlan(BaseModel):
-    """Overall nutrition plan for an athlete."""
+    """Overall nutrition plan for an athlete. Weights stored in kg internally."""
 
     athlete_id: str
     goal: NutritionGoal
     start_date: date
-    current_weight_kg: float
-    target_weight_kg: Optional[float] = None
+    current_weight_kg: float = Field(description="Current weight in kg (displayed in lbs for imperial)")
+    target_weight_kg: Optional[float] = Field(default=None, description="Target weight in kg (displayed in lbs for imperial)")
     base_macros: MacroBreakdown = Field(description="Base macros for rest days")
     easy_day_macros: MacroBreakdown
     hard_day_macros: MacroBreakdown
